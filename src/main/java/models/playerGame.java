@@ -21,24 +21,31 @@ public class playerGame extends Game
     @Override
     public void hit(int colNum)
     {
-        if (playerScore >= 21)
-        {
-            return;
+        if(colNum ==1) {
+            if (playerScore > 21) {
+                return;
+            }
+        }
+        else if(colNum == 2){
+            if(splitScore > 21){
+                return;
+            }
         }
 
         cols.get(colNum).add(deck.get(deck.size()-1));
         deck.remove(deck.size()-1);
 
-        if (colNum==1)
-        {
-            playerValues.add(cols.get(colNum).get(cols.get(colNum).size()-1).getValue());
-            playerScore=getTotalScore(playerValues);
+        if (colNum==1) {
+            playerValues.add(cols.get(colNum).get(cols.get(colNum).size() - 1).getValue());
+            playerScore = getTotalScore(playerValues);
         }
+
         else
         {
             splitValues.add(cols.get(colNum).get(cols.get(colNum).size()-1).getValue());
             splitScore=getTotalScore(splitValues);
         }
+
     }
 
     @Override
@@ -65,7 +72,7 @@ public class playerGame extends Game
     @Override
     public void split()
     {
-        if(cols.get(1).get(0).value == cols.get(1).get(1).value)
+        if(cols.get(1).get(0).value.equals(cols.get(1).get(1).value))
         {
             Suit suit = cols.get(1).get(1).suit;
             String value = cols.get(1).get(1).value;
@@ -75,7 +82,8 @@ public class playerGame extends Game
             playerValues.remove(value);
             cols.get(2).add(newCard);
             splitValues.add(value);
-
+            splitScore=getTotalScore(splitValues);
+            errMsg = "Successful Split";
         }
         else
         {

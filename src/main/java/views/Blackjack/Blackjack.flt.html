@@ -14,7 +14,7 @@
                 <td>Dealer's Hand</td>
             </tr>
 
-            <tr><td class="columnOfCards" id="c0">
+            <tr><td class="columnOfCards" id="dealerc0">
                 <table class="table">
                     <tr><td class="cardLocation l0"></td></tr>
                     <tr><td class="cardLocation l1"></td></tr>
@@ -38,22 +38,11 @@
     <div class="col-md-10">
     <table class="table">
         <tr class="title">
-            <td>Split Hand1</td>
             <td>Your Hand</td>
-            <td>Split Hand2</td>
+            <td>Split Hand</td>
         </tr>
 
-        <tr><td class="columnOfCards" id="c0">
-            <table class="table">
-                <tr><td class="cardLocation l0"></td></tr>
-                <tr><td class="cardLocation l1"></td></tr>
-                <tr><td class="cardLocation l2"></td></tr>
-                <tr><td class="cardLocation l3"></td></tr>
-                <tr><td class="cardLocation l4"></td></tr>
-                <tr><td class="cardLocation l5"></td></tr>
-            </table>
-        </td>
-            <td class="columnOfCards" id="c1">
+        <tr><td class="columnOfCards" id="c1">
                 <table class="table">
                     <tr><td class="cardLocation l0"></td></tr>
                     <tr><td class="cardLocation l1"></td></tr>
@@ -61,7 +50,7 @@
                     <tr><td class="cardLocation l3"></td></tr>
                     <tr><td class="cardLocation l4"></td></tr>
                     <tr><td class="cardLocation l5"></td></tr>
-                    <tr><td><button id="Remove1" class="btn btn-success">split?</button></td></tr>
+                    <tr><td><button id="splitButton" class="btn btn-success">Split</button></td></tr>
                 </table>
             </td>
             <td class="columnOfCards" id="c2">
@@ -97,193 +86,360 @@
 </div>
 <script>
 var game;
-// Checking for radio input
-var prev = null;
-var userCheck = document.getElementsByName('choose');
-var option;
-for (var i = 0; i < 2; i++){
-    // Function that checks if the user changed deck option
-    userCheck[i].onclick = function() {
-    $.ajax({
+var game2;
+var counter;
+var ifSplit = 0;
+var dealerFCard;
+var firstCard;
+var pScore,spScore,dScore;
+var winner;
+
+function start(){
+ $.ajax({
   type: "GET",
-  url: "/game/"+this.value,
+  url: "/game/player",
   data: JSON.stringify(game),
-  success: function(data, status){console.log("Data: " + data + "\nStatus: " + status);
+  success: function(data, status){console.log("PlayerStartData: " + data + "\nStatus: " + status);
         game = data;
-        display(data);},
+        pScore = game['playerScore'];
+        spScore = game['splitScore'];
+        displayUser(data);
+        },
   contentType:"application/json; charset=utf-8",
   dataType:"json",
 });
-        if(this.value == 0){
-            document.getElementById("choice").innerHTML = "Deck: Spanish";
-        }
-        else{
-            document.getElementById("choice").innerHTML = "Deck: American";
-        }
-        option = this.value;
-    };
 }
-function display(game) {
+
+function start2(){
+ $.ajax({
+  type: "GET",
+  url: "/game/dealer",
+  data2: JSON.stringify(game2),
+  success: function(data2, status){console.log("DealerStartData: " + data2 + "\nStatus: " + status);
+        game2 = data2;
+        dScore = game2['dealerScore'];
+        displayDealer(data2);
+        },
+  contentType:"application/json; charset=utf-8",
+  dataType:"json",
+});
+}
+
+start();
+start2();
+
+
+function displayUser(game) {
+counter = 0;
 console.log(game);
 $( '.columnOfCards .cardLocation' ).html("");
-    if(option == 0){
-      $.each(game.cols[0], function( key, val ) {
-            $( '#c0 .l'+key ).html(val.value + " of " + val.spSuit);
-        });
      $.each(game.cols[1], function( key, val ) {
-            $( '#c1 .l'+key ).html(val.value + " of " + val.spSuit);
-        });
+            $( '#c1 .l'+key ).html(val.value + " of " + val.suit);
+     });
      $.each(game.cols[2], function( key, val ) {
-            $( '#c2 .l'+key ).html(val.value + " of " + val.spSuit);
-        });
-     $.each(game.cols[3], function( key, val ) {
-            $( '#c3 .l'+key ).html(val.value + " of " + val.spSuit);
-        });
+            $( '#c2 .l'+key ).html(val.value + " of " + val.suit);
+     });
+     $.each(game2.cols[0], function( key, val ) {
+        if(counter == 0){
+            $( '#dealerc0 .l'+key ).html("Hidden");
+            dealerFCard = val.value + " of " + val.suit;
+            counter = 1;
         }
-    else{
-          $.each(game.cols[0], function( key, val ) {
-            $( '#c0 .l'+key ).html(val.value + " of " + val.amSuit);
+        else{
+            $( '#dealerc0 .l'+key ).html(val.value + " of " + val.suit);
+        }
+     });
+}
+
+function displayDealer(game2) {
+counter = 0;
+console.log(game2);
+$( '.columnOfCards .cardLocation' ).html("");
+     $.each(game2.cols[0], function( key, val ) {
+            if(counter == 0){
+              $( '#dealerc0 .l'+key ).html("Hidden");
+              dealerFCard = val.value + " of " + val.suit;
+              counter = 1;
+            }
+            else{
+               $( '#dealerc0 .l'+key ).html(val.value + " of " + val.suit);
+            }
         });
      $.each(game.cols[1], function( key, val ) {
-            $( '#c1 .l'+key ).html(val.value + " of " + val.amSuit);
-        });
+            $( '#c1 .l'+key ).html(val.value + " of " + val.suit);
+     });
      $.each(game.cols[2], function( key, val ) {
-            $( '#c2 .l'+key ).html(val.value + " of " + val.amSuit);
+            $( '#c2 .l'+key ).html(val.value + " of " + val.suit);
+     });
+}
+
+function displayFull(game) {
+firstCard = 0
+console.log(game);
+$( '.columnOfCards .cardLocation' ).html("");
+     $.each(game.cols[1], function( key, val ) {
+            $( '#c1 .l'+key ).html(val.value + " of " + val.suit);
+     });
+     $.each(game.cols[2], function( key, val ) {
+            $( '#c2 .l'+key ).html(val.value + " of " + val.suit);
+     });
+     $.each(game2.cols[0], function( key, val ) {
+            if(firstCard == 0){
+                $( '#dealerc0 .l'+key ).html(dealerFCard);
+                firstCard = 1;
+            }
+            else{
+            $( '#dealerc0 .l'+key ).html(val.value + " of " + val.suit);
+            }
+     });
+}
+
+function dealerDisplayFull(game2) {
+firstCard = 0;
+console.log(game2);
+$( '.columnOfCards .cardLocation' ).html("");
+     $.each(game2.cols[0], function( key, val ) {
+        if(firstCard == 0){
+               $( '#dealerc0 .l0' ).html(dealerFCard);
+               firstCard = 1;
+        }
+        else{
+               $( '#dealerc0 .l'+key ).html(val.value + " of " + val.suit);
+        }
         });
-     $.each(game.cols[3], function( key, val ) {
-            $( '#c3 .l'+key ).html(val.value + " of " + val.amSuit);
-        });
+     $.each(game.cols[1], function( key, val ) {
+            $( '#c1 .l'+key ).html(val.value + " of " + val.suit);
+     });
+     $.each(game.cols[2], function( key, val ) {
+            $( '#c2 .l'+key ).html(val.value + " of " + val.suit);
+     });
+}
+
+function hit(colNumber){
+$.ajax({
+  type: "POST",
+  url: "/hit/player/"+colNumber,
+  data: JSON.stringify(game),
+  success: function(data, status){console.log("Data: " + data + "\nStatus: " + status);
+        game = data;
+        console.log(game);
+        pScore = game['playerScore'];
+        spScore = game['splitScore'];
+        displayUser(data);
+        displayDealer(game2);
+        },
+  contentType:"application/json; charset=utf-8",
+  dataType:"json",
+});
+}
+
+$("#hitButton").click(function(){
+    if(ifSplit == 0 || ifSplit == 1){
+        hit(1);
     }
-}
-$("#dealButton").click(function(){
-// deal for Spanish deck
-if(option == 0){
-$.ajax({
-  type: "POST",
-  url: "/dealSpGame",
-  data: JSON.stringify(game),
-  success: function(data, status){console.log("Data: " + data + "\nStatus: " + status);
-        game = data;
-        display(data);},
-  error: function(xhr, data, thrownError){console.log(game);},
-  contentType:"application/json; charset=utf-8",
-  dataType:"json",
+    else{
+        hit(2);
+    }
 });
-}
-// deal for american deck
-else{
-$.ajax({
-  type: "POST",
-  url: "/dealAmGame",
-  data: JSON.stringify(game),
-  success: function(data, status){console.log("Data: " + data + "\nStatus: " + status);
-        game = data;
-        display(data);},
-  contentType:"application/json; charset=utf-8",
-  dataType:"json",
-});
-}
-});
-$("#inst").click(function(){
-    document.getElementById("textArea").innerHTML = " If there are two or more cards of the same suit, discard all but the highest-ranked card of that suit. Whenever there are any empty spaces, you may choose the top card of another pile to be put into the empty space. To win is to have only the four aces left.";
-});
-function removeCard(colNumber){
-if(option == 0){
-$.ajax({
-type: "POST",
-url: "/removeCardsp/"+colNumber,
-data: JSON.stringify(game),
-success: function(data, status){console.log("Data: " + data + "\nStatus: " + status);
-game = data;
-var errMsg=game["errMsg"];
-display(data);
-document.getElementById("textArea").innerHTML=errMsg;
-},
-contentType:"application/json; charset=utf-8",
-dataType:"json",
-});
-}
-else{
-$.ajax({
-type: "POST",
-url: "/removeCardam/"+colNumber,
-data: JSON.stringify(game),
-success: function(data, status){console.log("Data: " + data + "\nStatus: " + status);
-game = data;
-var errMsg=game["errMsg"];
-display(data);
-document.getElementById("textArea").innerHTML=errMsg;
-},
-contentType:"application/json; charset=utf-8",
-dataType:"json",
-});
-}
-}
-$("#Remove1").click(function(){
-    removeCard(0);
-});
-$("#Remove2").click(function(){
-    removeCard(1);
-});
-$("#Remove3").click(function(){
-    removeCard(2);
-});
-$("#Remove4").click(function(){
-    removeCard(3);
-});
+
 $("#newGame").click(function(){
     location.reload();
 });
-$("#move").click(function(){
-var fromCol = document.getElementsByName('fromCol');
-for (var i = 0; i < 4; i++){
-    if(fromCol[i].checked){
-        var fromColVal = fromCol[i].value;
-    }
-}
-var toCol = document.getElementsByName('toCol');
-for (var i = 0; i < 4; i++){
-    if(toCol[i].checked){
-        var toColVal = toCol[i].value;
-    }
-}
-checkMove(fromColVal, toColVal);
-});
-function checkMove(fromColVal, toColVal){
-if(option == 0){
+
+$("#splitButton").click(function(){
+ifSplit = 1;
 $.ajax({
   type: "POST",
-  url: "/moveCardsp/"+fromColVal+"/"+toColVal,
+  url: "/split",
   data: JSON.stringify(game),
   success: function(data, status){console.log("Data: " + data + "\nStatus: " + status);
         game = data;
         var errMsg=game["errMsg"];
-        display(data);
+        displayUser(data);
+        displayDealer(game2);
         document.getElementById("textArea").innerHTML=errMsg;
 },
   contentType:"application/json; charset=utf-8",
   dataType:"json",
 });
+});
+
+function playTheGame(){
+
 }
-else{
+
+function checkTheGame(){
+alert("passing in dscore: " + dScore);
+alert("passing in pscore: " + pScore);
+
+}
+///////////////////////////////////////////////////////////////////////////////////////////////
+$("#stayButton").click(function(){
+   if(ifSplit == 0){
+        //playTheGame();
+        //checkTheGame();
 $.ajax({
   type: "POST",
-  url: "/moveCardam/"+fromColVal+"/"+toColVal,
-  data: JSON.stringify(game),
-  success: function(data, status){console.log("Data: " + data + "\nStatus: " + status);
-        game = data;
-        var errMsg=game["errMsg"];
-        display(data);
-        document.getElementById("textArea").innerHTML=errMsg;
-},
+  url: "/noSplitData",
+  data: JSON.stringify(game2),
+  success: function(data, status){console.log("DealerDataPlayedGame: " + data + "\nStatus: " + status);
+        game2 = data;
+        dealerDisplayFull(game2);
+        displayFull(game);
+        dScore = game2['dealerScore'];
+        pScore = game['playerScore'];
+        alert(dScore);
+        alert(pScore);
+        if(pScore > 21){
+            pScore = 0;
+        }
+        if (dScore > pScore)
+        {
+            document.getElementById("textArea").innerHTML = "Dealer wins";
+        }
+        else if (pScore > dScore)
+        {
+            document.getElementById("textArea").innerHTML = "Player wins";
+        }
+        else
+        {
+            document.getElementById("textArea").innerHTML = "Draw";
+        }
+    },
   contentType:"application/json; charset=utf-8",
   dataType:"json",
 });
-}
-}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+   }
+    else if(ifSplit == 1){
+        document.getElementById("textArea").innerHTML = "Now playing split hand";
+        ifSplit = 2;
+    }
+
+    else{
+        $.ajax({
+  type: "POST",
+  url: "/noSplitData",
+  data: JSON.stringify(game2),
+  success: function(data, status){console.log("Data: " + data + "\nStatus: " + status);
+        game2 = data;
+        dealerDisplayFull(game2);
+        displayFull(game);
+        dScore = game2['dealerScore'];
+        pScore = game['playerScore'];
+        spScore = game['splitScore'];
+        if(pScore > 21){
+            pScore = 0;
+        }
+        if(spScore > 21){
+            spScore = 0;
+        }
+        if(pScore > spScore){
+        if (dScore > pScore){
+            document.getElementById("textArea").innerHTML = "Dealer wins";
+        }
+        else if (pScore > dScore)
+        {
+            document.getElementById("textArea").innerHTML = "Player wins";
+        }
+        else
+        {
+            document.getElementById("textArea").innerHTML = "Draw";
+        }
+        }
+        else if(spScore > pScore){
+            if(dScore > spScore){
+            document.getElementById("textArea").innerHTML = "Dealer wins";
+            }
+            else if(spScore > dScore){
+                        document.getElementById("textArea").innerHTML = "Player split hand wins";
+            }
+            else{
+                        document.getElementById("textArea").innerHTML = "Draw";
+            }
+
+        }
+    },
+  contentType:"application/json; charset=utf-8",
+  dataType:"json",
+});
+
+//-------------------------------------------------------------------------------------------------
+       /* $.ajax({
+  type: "POST",
+  url: "/noSplitData",
+  data: JSON.stringify(game2),
+  success: function(data, status){console.log("DealerDataPlayedGame: " + data + "\nStatus: " + status);
+        game2 = data;
+        dealerDisplayFull(game2);
+        displayFull(game);
+        dScore = game2['dealerScore'];
+        pScore = game['playerScore'];
+        spScore = game['splitScore'];
+        if (dScore > 21)
+        {
+            dScore = 0;
+        }
+        if (pScore > 21)
+        {
+            pScore = 0;
+        }
+        if (spScore > 21)
+        {
+            spScore = 0;
+        }
+        alert(dScore);
+        if ((pScore > spScore))
+        {
+            if (dScore > pScore)
+            {
+                document.getElementById("textArea").innerHTML = "Dealer wins";
+            }
+            else if (pScore > dScore)
+            {
+                document.getElementById("textArea").innerHTML = "Player wins";
+            }
+            else
+            {
+                document.getElementById("textArea").innerHTML = "Draw";
+            }
+        }
+        else if ((spScore>pScore))
+        {
+            if (dScore > spScore)
+            {
+                document.getElementById("textArea").innerHTML = "Dealer wins";
+            }
+            else if (spScore > dScore)
+            {
+                document.getElementById("textArea").innerHTML = "Player wins";
+            }
+            else
+            {
+                document.getElementById("textArea").innerHTML = "Draw";
+            }
+        }
+        else if (spScore==pScore)
+        {
+            document.getElementById("textArea").innerHTML = "Draw sp=p";
+        }
+        else
+        {
+            document.getElementById("textArea").innerHTML = "Dealer";
+        }
+        //alert("pScore: " + pScore);
+        //alert("first objectDealerScore: " + game2['dealerScore']);
+    },
+  contentType:"application/json; charset=utf-8",
+  dataType:"json",
+}); */
+    }
+
+});
+
 </script>
-
-
 
 </body>
 </html>

@@ -16,11 +16,14 @@
 
 package controllers;
 
+import models.Game;
+import models.playerGame;
 import ninja.Result;
 import ninja.Results;
 import ninja.Context;
-import models.Game;
+import models.dealerGame;
 import com.google.inject.Singleton;
+import ninja.params.PathParam;
 
 
 @Singleton
@@ -33,7 +36,46 @@ public class ApplicationController {
     }
 
     public Result blackjack(){
+
         return Results.html().template("views/Blackjack/Blackjack.flt.html");
+    }
+
+    public Result playerGameGet(){
+        playerGame g = new playerGame();
+        g.buildDeck();
+        g.shuffle();
+        g.initialDeal();
+        return Results.json().render(g);
+    }
+
+    public Result dealerGameGet(){
+        dealerGame g = new dealerGame();
+        g.buildDeck();
+        g.shuffle();
+        g.initialDeal();
+        return Results.json().render(g);
+    }
+
+    public Result playerHit(Context context, @PathParam("columnTo") int col, playerGame g) {
+        if(context.getRequestPath().contains("player")){
+            g.hit(col);
+        }
+        return Results.json().render(g);
+    }
+
+    public Result split(Context context, playerGame g){
+        g.split();
+        return Results.json().render(g);
+    }
+
+    public Result dealerPlay(Context context, dealerGame g){
+        g.play();
+        return Results.json().render(g);
+    }
+
+    public Result checkVal(Context context, @PathParam("dScore") int dScore,@PathParam("pScore") int pScore,@PathParam("spScore") int spScore,playerGame g){
+        g.checkWinner(dScore,pScore,spScore);
+        return Results.json().render(g);
     }
 
     /*public Result gameGet(){
